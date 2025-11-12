@@ -7,10 +7,17 @@ class Caravan(models.Model):
         RESERVED = 'RESERVED', 'Reserved'
         MAINTENANCE = 'MAINTENANCE', 'Maintenance'
 
-    host = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
+    host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='caravans')
+    name = models.CharField(max_length=100)
     description = models.TextField()
     capacity = models.PositiveIntegerField()
     amenities = models.JSONField(default=list)
     location = models.CharField(max_length=255)
-    status = models.CharField(max_length=11, choices=CaravanStatus.choices, default=CaravanStatus.AVAILABLE)
+    status = models.CharField(
+        max_length=20,
+        choices=CaravanStatus.choices,
+        default=CaravanStatus.AVAILABLE,
+    )
+
+    def __str__(self):
+        return self.name
