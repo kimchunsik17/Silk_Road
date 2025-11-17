@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Available Caravans{% endblock %}
+
+{% block content %}
+    <h1 class="my-4">Available Caravans</h1>
+    {% if caravans %}
+        <div class="list-group">
+            {% for caravan in caravans %}
+                <div class="list-group-item list-group-item-action flex-column align-items-start mb-3">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h2 class="mb-1"><a href="{% url 'caravan-detail' caravan.id %}" class="text-primary text-decoration-none">{{ caravan.name }}</a></h2>
+                        <small class="text-muted">Capacity: {{ caravan.capacity }}</small>
+                    </div>
+                    <p class="mb-1">{{ caravan.description }}</p>
+                    <small class="text-muted">Location: {{ caravan.location }}</small>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No caravans are available at the moment.
+        </div>
+    {% endif %}
+{% endblock %}

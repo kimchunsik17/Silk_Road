@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ caravan.name }}{% endblock %}
+
+{% block content %}
+    <h1 class="my-4">{{ caravan.name }}</h1>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Description:</h5>
+            <p class="card-text">{{ caravan.description }}</p>
+            <h5 class="card-title">Capacity:</h5>
+            <p class="card-text">{{ caravan.capacity }}</p>
+            <h5 class="card-title">Location:</h5>
+            <p class="card-text">{{ caravan.location }}</p>
+            <h5 class="card-title">Status:</h5>
+            <p class="card-text">{{ caravan.status }}</p>
+        </div>
+    </div>
+
+    <hr>
+
+    <h2 class="my-4">Make a Reservation</h2>
+    <div id="message-container" class="mb-3"></div>
+    <form id="reservation-form">
+        <input type="hidden" name="caravan_id" value="{{ caravan.id }}">
+        
+        <div class="mb-3">
+            <label for="start_date" class="form-label">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="end_date" class="form-label">End Date:</label>
+            <input type="date" id="end_date" name="end_date" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Book Now</button>
+    </form>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        document.getElementById('reservation-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            const data = {
+                caravan_id: parseInt(formData.get('caravan_id')),
+                start_date: formData.get('start_date'),
+                end_date: formData.get('end_date'),
+            };
+
+            const messageContainer = document.getElementById('message-container');
+            messageContainer.innerHTML = ''; // Clear previous messages
+
+            try {
+                const response = await fetch('/api/reservations/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    messageContainer.innerHTML = `<div class="alert alert-success" role="alert">Reservation successful! ID: ${result.reservation_id}</div>`;
+                    form.reset();
+                } else {
+                    let errorMessage = result.message || 'An error occurred.';
+                    if (result.errors) {
+                        errorMessage = Object.entries(result.errors).map(([field, errors]) => `${field}: ${errors.join(', ')}`).join('<br>');
+                    }
+                    messageContainer.innerHTML = `<div class="alert alert-danger" role="alert">${errorMessage}</div>`;
+                }
+            } catch (error) {
+                messageContainer.innerHTML = `<div class="alert alert-danger" role="alert">A network error occurred. Please try again.</div>`;
+                console.error('Error:', error);
+            }
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+{% endblock %}
+
