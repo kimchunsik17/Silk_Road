@@ -3,8 +3,13 @@ from django.db import models
 
 class User(AbstractUser):
     class UserType(models.TextChoices):
-        HOST = 'HOST', 'Host'
         GUEST = 'GUEST', 'Guest'
+        HOST = 'HOST', 'Host'
 
-    user_type = models.CharField(max_length=5, choices=UserType.choices)
+    user_type = models.CharField(
+        max_length=10,
+        choices=UserType.choices,
+        default=UserType.GUEST,
+    )
+    contact = models.CharField(max_length=15, blank=True)
     is_verified = models.BooleanField(default=False)
