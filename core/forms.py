@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User
+from .models import User, CaravanImage
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
@@ -22,3 +22,8 @@ class ReservationForm(forms.Form):
             raise forms.ValidationError("End date must be after start date.")
 
         return cleaned_data
+
+class CaravanImageForm(forms.ModelForm):
+    class Meta:
+        model = CaravanImage
+        fields = ['image', 'description']

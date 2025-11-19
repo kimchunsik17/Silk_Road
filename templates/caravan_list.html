@@ -4,6 +4,14 @@
 
 {% block content %}
     <h1 class="my-4">Available Caravans</h1>
+
+    <div class="mb-4">
+        <form class="d-flex" action="{% url 'caravan-list' %}" method="get">
+            <input class="form-control me-2" type="search" placeholder="Search by name" aria-label="Search" name="q" value="{{ request.GET.q }}">
+            <button class="btn btn-outline-success" type="submit">Search</button>
+        </form>
+    </div>
+
     {% if caravans %}
         <div class="list-group">
             {% for caravan in caravans %}

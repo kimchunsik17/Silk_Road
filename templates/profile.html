@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+    <h1 class="my-4">My Reservations</h1>
+    {% if reservations %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Caravan</th>
+                    <th scope="col">Start Date</th>
+                    <th scope="col">End Date</th>
+                    <th scope="col">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                    <tr>
+                        <td>{{ reservation.caravan.name }}</td>
+                        <td>{{ reservation.start_date }}</td>
+                        <td>{{ reservation.end_date }}</td>
+                        <td>{{ reservation.status }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            You have no reservations.
+        </div>
+    {% endif %}
+{% endblock %}

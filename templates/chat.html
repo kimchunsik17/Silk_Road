@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat{% endblock %}
+
+{% block content %}
+    <h1 class="my-4">Chat with {{ receiver.username }}</h1>
+
+    <div id="chat-log" class="mb-3" style="height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px;">
+    {% for chat in chat_history %}
+        <div class="{% if chat.sender == request.user %}text-end{% else %}text-start{% endif %}">
+            <strong>{% if chat.sender == request.user %}You{% else %}{{ chat.sender.username }}{% endif %}</strong>: {{ chat.message }}
+        </div>
+    {% endfor %}
+    </div>
+
+    <form id="chat-form">
+        <div class="input-group">
+            <input type="text" id="chat-message-input" class="form-control">
+            <button type="submit" id="chat-message-submit" class="btn btn-primary">Send</button>
+        </div>
+    </form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const chatLog = document.querySelector('#chat-log');
+    chatLog.scrollTop = chatLog.scrollHeight;
+
+    const roomName = '{{ room_name }}';
+    const requestUser = '{{ request.user.username }}';
+
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/chat/'
+        + roomName
+        + '/'
+    );
+
+    chatSocket.onopen = function(e) {
+        console.log('Chat socket opened');
+    };
+
+    chatSocket.onerror = function(e) {
+        console.error('Chat socket error:', e);
+    };
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        console.log('Received message:', data);
+        const messageElement = document.createElement('div');
+        const isSender = data.sender_username === requestUser;
+        messageElement.classList.add(isSender ? 'text-end' : 'text-start');
+        messageElement.innerHTML = `<strong>${isSender ? 'You' : data.sender_username}</strong>: ${data.message}`;
+        chatLog.appendChild(messageElement);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        e.preventDefault();
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        chatSocket.send(JSON.stringify({
+            'message': message
+        }));
+        messageInputDom.value = '';
+    };
+</script>
+{% endblock %}

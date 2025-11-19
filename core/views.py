@@ -1,10 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth import logout
 import json
-from .models import Caravan
+from datetime import timedelta
+from .models import Caravan, Reservation, User, Chat
+from django.db.models import Q
 from .services.reservation_service import ReservationService
 from .repositories.reservation_repository import ReservationRepository
 from .services.validators import ReservationValidator
@@ -12,7 +15,7 @@ from .services.payment_service import PaymentService
 from .services.notification_service import NotificationService
 from .services.pricing_strategy import StandardPricingStrategy
 from .exceptions import ReservationConflictError, InsufficientPermissionsError, PaymentFailedError
-from .forms import ReservationForm, CustomUserCreationForm
+from .forms import ReservationForm, CustomUserCreationForm, CaravanImageForm
 
 def signup_view(request):
     if request.method == 'POST':
@@ -24,14 +27,36 @@ def signup_view(request):
         form = CustomUserCreationForm()
     return render(request, 'signup.html', {'form': form})
 
+@login_required
+def custom_logout_view(request):
+    logout(request)
+    return redirect('caravan-list')
+
 def caravan_list_view(request):
-    caravans = Caravan.objects.all()
+    query = request.GET.get('q')
+    if query:
+        caravans = Caravan.objects.filter(name__icontains=query)
+    else:
+        caravans = Caravan.objects.all()
     return render(request, 'caravan_list.html', {'caravans': caravans})
 
-@login_required
 def caravan_detail_view(request, caravan_id):
     caravan = get_object_or_404(Caravan, pk=caravan_id)
-    return render(request, 'caravan_detail.html', {'caravan': caravan})
+    reservations = Reservation.objects.filter(caravan=caravan)
+    caravan_images = caravan.images.all() # Retrieve all images for the caravan
+    
+    reserved_dates = []
+    for reservation in reservations:
+        current_date = reservation.start_date
+        while current_date <= reservation.end_date:
+            reserved_dates.append(current_date.strftime('%Y-%m-%d'))
+            current_date += timedelta(days=1)
+            
+    return render(request, 'caravan_detail.html', {
+        'caravan': caravan,
+        'reserved_dates': json.dumps(reserved_dates),
+        'caravan_images': caravan_images,
+    })
 
 @login_required
 @require_POST
@@ -72,3 +97,46 @@ def create_reservation_view(request):
     except Exception as e:
         # It's better to log the exception here in a real app
         return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred.'}, status=500)
+
+@login_required
+def chat_view(request, user_id):
+    receiver = get_object_or_404(User, id=user_id)
+    if request.user == receiver:
+        return redirect('caravan-list')
+
+    room_name = '_'.join(sorted([str(request.user.id), str(receiver.id)]))
+    
+    chat_history = Chat.objects.filter(
+        (Q(sender=request.user) & Q(receiver=receiver)) |
+        (Q(sender=receiver) & Q(receiver=request.user))
+    ).order_by('timestamp')
+
+    return render(request, 'chat.html', {
+        'receiver': receiver,
+        'room_name': room_name,
+        'chat_history': chat_history
+    })
+
+@login_required
+def caravan_image_upload_view(request, caravan_id):
+    caravan = get_object_or_404(Caravan, pk=caravan_id)
+
+    if request.user != caravan.host:
+        return HttpResponseForbidden("You are not the host of this caravan.")
+
+    if request.method == 'POST':
+        form = CaravanImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            caravan_image = form.save(commit=False)
+            caravan_image.caravan = caravan
+            caravan_image.save()
+            return redirect('caravan-detail', caravan_id=caravan.id)
+    else:
+        form = CaravanImageForm()
+    
+    return render(request, 'caravan_image_upload.html', {'caravan': caravan, 'form': form})
+
+@login_required
+def profile_view(request):
+    reservations = Reservation.objects.filter(guest=request.user)
+    return render(request, 'profile.html', {'reservations': reservations})
