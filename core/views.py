@@ -8,7 +8,10 @@ from .models import Caravan
 from .services.reservation_service import ReservationService
 from .repositories.reservation_repository import ReservationRepository
 from .services.validators import ReservationValidator
-from .exceptions import ReservationConflictError, InsufficientPermissionsError
+from .services.payment_service import PaymentService
+from .services.notification_service import NotificationService
+from .services.pricing_strategy import StandardPricingStrategy
+from .exceptions import ReservationConflictError, InsufficientPermissionsError, PaymentFailedError
 from .forms import ReservationForm, CustomUserCreationForm
 
 def signup_view(request):
@@ -56,12 +59,15 @@ def create_reservation_view(request):
         # Manual dependency injection for now
         reservation_repo = ReservationRepository()
         validator = ReservationValidator(reservation_repo)
-        service = ReservationService(validator)
+        payment_service = PaymentService()
+        notification_service = NotificationService()
+        pricing_strategy = StandardPricingStrategy()
+        service = ReservationService(validator, payment_service, notification_service, pricing_strategy)
 
         reservation = service.create_reservation(user_id, caravan_id, start_date, end_date)
 
         return JsonResponse({'status': 'success', 'reservation_id': reservation.id}, status=201)
-    except (ReservationConflictError, InsufficientPermissionsError) as e:
+    except (ReservationConflictError, InsufficientPermissionsError, PaymentFailedError) as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     except Exception as e:
         # It's better to log the exception here in a real app

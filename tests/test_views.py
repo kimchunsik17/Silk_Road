@@ -9,8 +9,9 @@ def test_create_reservation_success(client):
     host = User.objects.create_user(username='host', password='password', user_type='HOST')
     guest = User.objects.create_user(username='guest', password='password', user_type='GUEST')
     caravan = Caravan.objects.create(host=host, name='Test Caravan', capacity=4)
+    client.login(username='guest', password='password')
     
-    url = reverse('create-reservation')
+    url = reverse('create-reservation-api')
     data = {
         'user_id': guest.id,
         'caravan_id': caravan.id,
@@ -27,9 +28,11 @@ def test_create_reservation_success(client):
 
 @pytest.mark.django_db
 def test_create_reservation_invalid_input(client):
-    url = reverse('create-reservation')
+    guest = User.objects.create_user(username='guest', password='password', user_type='GUEST')
+    client.login(username='guest', password='password')
+    url = reverse('create-reservation-api')
     data = {
-        'user_id': 1,
+        'user_id': guest.id,
         # caravan_id is missing
         'start_date': '2025-01-10',
         'end_date': '2025-01-15',
@@ -55,8 +58,9 @@ def test_create_reservation_conflict(client):
         start_date=date(2025, 1, 12),
         end_date=date(2025, 1, 18)
     )
+    client.login(username='guest', password='password')
     
-    url = reverse('create-reservation')
+    url = reverse('create-reservation-api')
     data = {
         'user_id': guest.id,
         'caravan_id': caravan.id,
@@ -72,8 +76,9 @@ def test_create_reservation_conflict(client):
 
 @pytest.mark.django_db
 def test_create_reservation_bad_json(client):
-    url = reverse('create-reservation')
-    
+    guest = User.objects.create_user(username='guest', password='password', user_type='GUEST')
+    client.login(username='guest', password='password')
+    url = reverse('create-reservation-api')    
     response = client.post(url, data='{bad json', content_type='application/json')
     
     assert response.status_code == 400
