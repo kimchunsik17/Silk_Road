@@ -1,0 +1,46 @@
+:root {
+    --primary-color: #FF6B35;
+    --secondary-color: #F7C59F;
+    --text-color: #333;
+    --light-gray: #f8f9fa;
+    --border-color: #dee2e6;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-color);
+}
+
+.navbar {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: #e05a2a;
+    border-color: #e05a2a;
+}
+
+.navbar-brand {
+    color: var(--primary-color) !important;
+}
+
+main {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2.5rem; /* Reduce hero title size on mobile */
+    }
+
+    main {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+}

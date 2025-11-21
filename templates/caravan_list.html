@@ -1,33 +1,60 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Available Caravans{% endblock %}
+{% block title %}Find Your Next Adventure{% endblock %}
 
 {% block content %}
-    <h1 class="my-4">Available Caravans</h1>
-
-    <div class="mb-4">
-        <form class="d-flex" action="{% url 'caravan-list' %}" method="get">
-            <input class="form-control me-2" type="search" placeholder="Search by name" aria-label="Search" name="q" value="{{ request.GET.q }}">
-            <button class="btn btn-outline-success" type="submit">Search</button>
-        </form>
+    <!-- Hero Search Section -->
+    <div class="container text-center my-5">
+        <h1 class="display-4 fw-bold">Find Your Perfect Caravan</h1>
+        <p class="lead mb-4">Search for amazing caravans in the best locations.</p>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <form class="d-flex flex-column flex-md-row gap-2" action="{% url 'caravan-list' %}" method="get">
+                    <input class="form-control form-control-lg" type="search" placeholder="Search by name or location..." aria-label="Search" name="q" value="{{ request.GET.q }}">
+                    <button class="btn btn-primary btn-lg" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
     </div>
 
-    {% if caravans %}
-        <div class="list-group">
-            {% for caravan in caravans %}
-                <div class="list-group-item list-group-item-action flex-column align-items-start mb-3">
-                    <div class="d-flex w-100 justify-content-between">
-                        <h2 class="mb-1"><a href="{% url 'caravan-detail' caravan.id %}" class="text-primary text-decoration-none">{{ caravan.name }}</a></h2>
-                        <small class="text-muted">Capacity: {{ caravan.capacity }}</small>
+    <hr class="my-5">
+
+    <!-- Caravan Listings -->
+    <div class="container">
+        <h2 class="mb-4">Available Caravans</h2>
+        {% if caravans %}
+            <div class="row">
+                {% for caravan in caravans %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 shadow-sm border-0">
+                            {% if caravan.images.first %}
+                                <img src="{{ caravan.images.first.image.url }}" class="card-img-top" alt="{{ caravan.name }}" style="height: 200px; object-fit: cover;">
+                            {% else %}
+                                <img src="{% static 'images/image_not_available.jpg' %}" class="card-img-top" alt="Default caravan image" style="height: 200px; object-fit: cover;">
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ caravan.name }}</h5>
+                                <p class="card-text text-muted">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill me-1" viewBox="0 0 16 16">
+                                      <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                                    </svg>
+                                    {{ caravan.location }}
+                                </p>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pb-3">
+                                <div class="d-grid">
+                                    <a href="{% url 'caravan-detail' caravan.id %}" class="btn btn-outline-primary">View Details</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <p class="mb-1">{{ caravan.description }}</p>
-                    <small class="text-muted">Location: {{ caravan.location }}</small>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="alert alert-info" role="alert">
-            No caravans are available at the moment.
-        </div>
-    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                No caravans match your search.
+            </div>
+        {% endif %}
+    </div>
 {% endblock %}

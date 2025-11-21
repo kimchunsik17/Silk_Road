@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Social Network Login" %}{% endblock %}
+
+{% block content %}
+<div class="container vh-100">
+    <div class="row h-100 justify-content-center align-items-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body p-4 p-md-5 text-center">
+                    {% if process == "connect" %}
+                        <h1 class="card-title mb-4">{% blocktrans with provider.name as name %}Connect with {{ name }}{% endblocktrans %}</h1>
+                        <p>{% blocktrans with provider.name as name %}You are about to connect a new third party account from {{ name }}.{% endblocktrans %}</p>
+                    {% else %}
+                        <h1 class="card-title mb-4">{% blocktrans with provider.name as name %}Sign In with {{ name }}{% endblocktrans %}</h1>
+                        <p>{% blocktrans with provider.name as name %}You are about to sign in using a third party account from {{ name }}.{% endblocktrans %}</p>
+                    {% endif %}
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">{% trans "Continue" %}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
