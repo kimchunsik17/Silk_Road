@@ -20,6 +20,15 @@
 
     <hr class="my-5">
 
+    <!-- Host Action -->
+    {% if user.is_authenticated and user.user_type == 'HOST' %}
+    <div class="container text-center my-5 p-4 bg-light rounded shadow-sm">
+        <h2 class="fw-bold">Ready to share your caravan?</h2>
+        <p class="lead text-muted">Join our community of hosts and start earning today.</p>
+        <a href="{% url 'create-caravan' %}" class="btn btn-primary btn-lg mt-3">Host a Caravan</a>
+    </div>
+    {% endif %}
+
     <!-- Caravan Listings -->
     <div class="container">
         <h2 class="mb-4">Available Caravans</h2>

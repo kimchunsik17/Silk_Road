@@ -74,6 +74,7 @@
                     {% if user.is_authenticated and user != caravan.host %}
                         <a href="{% url 'chat' caravan.host.id %}" class="btn btn-secondary btn-sm">Chat with provider</a>
                     {% elif user.is_authenticated and user == caravan.host %}
+                        <a href="{% url 'update-caravan' caravan.id %}" class="btn btn-secondary btn-sm">Edit Caravan</a>
                         <a href="{% url 'caravan-image-upload' caravan.id %}" class="btn btn-info btn-sm">Upload Images</a>
                     {% endif %}
                 </div>
@@ -87,32 +88,15 @@
                 <div class="card shadow-sm">
                     <div class="card-body">
                         {% if user.is_authenticated %}
-                            <h3 class="mb-4">Make a Reservation</h3>
+                            <h3 class="mb-4">Reserve Your Spot</h3>
                             
-                            <h5 class="mb-3">Select Dates</h5>
-                            <div id="calendar" class="mb-3"></div>
+                            <p class="text-muted">Proceed to our secure checkout to select your dates and finalize payment.</p>
                             
                             <div id="message-container" class="mb-3"></div>
                             
-                            <form id="reservation-form">
-                                <input type="hidden" name="caravan_id" value="{{ caravan.id }}">
-                                <input type="hidden" id="start_date_hidden" name="start_date">
-                                <input type="hidden" id="end_date_hidden" name="end_date">
-                                
-                                <div class="row g-2 mb-3">
-                                    <div class="col">
-                                        <label for="start_date_display" class="form-label">Start Date</label>
-                                        <input type="text" id="start_date_display" class="form-control" disabled placeholder="Select on calendar">
-                                    </div>
-                                    <div class="col">
-                                        <label for="end_date_display" class="form-label">End Date</label>
-                                        <input type="text" id="end_date_display" class="form-control" disabled placeholder="Select on calendar">
-                                    </div>
-                                </div>
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary btn-lg">Book Now</button>
-                                </div>
-                            </form>
+                            <div class="d-grid">
+                                <a href="{% url 'checkout' caravan_id=caravan.id %}" class="btn btn-primary btn-lg">Reserve</a>
+                            </div>
                         {% else %}
                             <div class="alert alert-info mt-4" role="alert">
                                 Please <a href="{% url 'login' %}?next={{ request.path }}" class="alert-link">login</a> to make a reservation.
@@ -124,124 +108,5 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const reservedDates = JSON.parse('{{ reserved_dates|escapejs }}');
-        const calendar = new VanillaJSCalendar(document.getElementById('calendar'), {
-            settings: {
-                selection: {
-                    day: 'multiple-range',
-                },
-                visibility: {
-                    daysOutsideMonth: false,
-                },
-                iso8601: false,
-                range: {
-                    disablePast: true,
-                    disabled: reservedDates,
-                },
-            },
-            actions: {
-                clickDay(e, dates) {
-                    if (dates[0]) {
-                        // Format to YYYY-MM-DD
-                        const formatDate = (d) => {
-                            const date = new Date(d);
-                            const year = date.getFullYear();
-                            const month = String(date.getMonth() + 1).padStart(2, '0');
-                            const day = String(date.getDate()).padStart(2, '0');
-                            return `${year}-${month}-${day}`;
-                        }
-                        
-                        const startDate = formatDate(dates[0]);
-                        document.getElementById('start_date_display').value = startDate;
-                        document.getElementById('start_date_hidden').value = startDate;
-
-                        if (dates[1]) {
-                             const endDate = formatDate(dates[1]);
-                             document.getElementById('end_date_display').value = endDate;
-                             document.getElementById('end_date_hidden').value = endDate;
-                        } else {
-                             document.getElementById('end_date_display').value = '';
-                             document.getElementById('end_date_hidden').value = '';
-                        }
-                    }
-                }
-            }
-        });
-        calendar.init();
-    });
-
-    {% if user.is_authenticated %}
-    document.getElementById('reservation-form').addEventListener('submit', async function(event) {
-        event.preventDefault();
-
-        const form = event.target;
-        const formData = new FormData(form);
-        
-        const data = {
-            caravan_id: parseInt(formData.get('caravan_id')),
-            start_date: formData.get('start_date'),
-            end_date: formData.get('end_date'),
-        };
-
-        const messageContainer = document.getElementById('message-container');
-        messageContainer.innerHTML = ''; // Clear previous messages
-
-        // Simple validation
-        if (!data.start_date || !data.end_date) {
-            messageContainer.innerHTML = `<div class="alert alert-warning" role="alert">Please select a start and end date.</div>`;
-            return;
-        }
-
-        try {
-            const response = await fetch("{% url 'create-reservation' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken'),
-                },
-                body: JSON.stringify(data),
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                messageContainer.innerHTML = `<div class="alert alert-success" role="alert">Reservation successful! You will be redirected shortly.</div>`;
-                setTimeout(() => {
-                    location.reload(); // simple solution to show new disabled dates
-                }, 2000);
-            } else {
-                let errorMessage = result.message || 'An error occurred.';
-                if (result.errors) {
-                    errorMessage = Object.entries(result.errors).map(([field, errors]) => `${field}: ${errors.join(', ')}`).join('<br>');
-                }
-                messageContainer.innerHTML = `<div class="alert alert-danger" role="alert">${errorMessage}</div>`;
-            }
-        } catch (error) {
-            messageContainer.innerHTML = `<div class="alert alert-danger" role="alert">A network error occurred. Please try again.</div>`;
-            console.error('Error:', error);
-        }
-    });
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    {% endif %}
-</script>
 {% endblock %}
 
