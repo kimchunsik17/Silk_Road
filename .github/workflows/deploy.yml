@@ -1,0 +1,35 @@
+name: Django CI/CD Deployment
+
+on:
+  push:
+    branches: [ "main", "master" ]  # main 또는 master 브랜치에 푸시될 때 실행
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH Remote Commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # 1. 프로젝트 폴더로 이동
+            cd ~/Silk_Road
+            
+            # 2. 최신 코드 다운로드
+            git pull origin main
+            
+            # 3. 가상환경 켜기
+            source venv/bin/activate
+            
+            # 4. 패키지 설치 (새로운 라이브러리가 있을 수 있으니)
+            pip install -r requirements.txt
+            
+            # 5. CSS 파일 모으기 & DB 마이그레이션
+            python manage.py collectstatic --noinput
+            python manage.py migrate
+            
+            # 6. 서버 재시작 (관리자 권한 필요)
+            sudo systemctl restart gunicorn
