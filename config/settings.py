@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -169,4 +170,16 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://34.64.46.126.nip.io',
+]
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# 웹에서 접근할 때 쓸 URL (예: http://사이트/media/사진.jpg)
+MEDIA_URL = '/media/'
 
