@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponseForbidden
+from django.utils.html import escape
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
@@ -146,6 +147,7 @@ def caravan_detail_view(request, caravan_id):
         'caravan_images': caravan_images,
     })
 
+from django.utils.html import escape
 from django.contrib import messages
 from datetime import datetime
 
@@ -187,8 +189,8 @@ def checkout_view(request, caravan_id):
             messages.error(request, "Invalid date format. Please use YYYY-MM-DD.")
             return redirect('checkout', caravan_id=caravan_id)
         except Exception as e:
-            # Temporarily expose the actual error for debugging
-            error_message = f"An unexpected error occurred: {e}"
+            # Temporarily expose the actual error for debugging, escaping it for safety
+            error_message = f"An unexpected error occurred: {escape(e)}"
             messages.error(request, error_message)
             return redirect('checkout', caravan_id=caravan_id)
 
