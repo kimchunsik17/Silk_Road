@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import logout
 import json
-from datetime import timedelta
+from datetime import timedelta, datetime
 from .models import Caravan, Reservation, User, Chat
 from django.db.models import Q
 from .services.reservation_service import ReservationService
@@ -147,20 +147,26 @@ def caravan_detail_view(request, caravan_id):
     })
 
 from django.contrib import messages
+from datetime import datetime
+
 @login_required
 def checkout_view(request, caravan_id):
     caravan = get_object_or_404(Caravan, pk=caravan_id)
 
     if request.method == 'POST':
-        start_date = request.POST.get('start_date')
-        end_date = request.POST.get('end_date')
+        start_date_str = request.POST.get('start_date')
+        end_date_str = request.POST.get('end_date')
         
         # Basic validation
-        if not start_date or not end_date:
+        if not start_date_str or not end_date_str:
             messages.error(request, "Please select a start and end date.")
             return redirect('checkout', caravan_id=caravan_id)
 
         try:
+            # Convert string dates to date objects
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+
             # Manual dependency injection
             reservation_repo = ReservationRepository()
             validator = ReservationValidator(reservation_repo)
@@ -177,7 +183,11 @@ def checkout_view(request, caravan_id):
         except (ReservationConflictError, InsufficientPermissionsError, PaymentFailedError) as e:
             messages.error(request, str(e))
             return redirect('checkout', caravan_id=caravan_id)
+        except ValueError:
+            messages.error(request, "Invalid date format. Please use YYYY-MM-DD.")
+            return redirect('checkout', caravan_id=caravan_id)
         except Exception as e:
+            # Optionally log the error e
             messages.error(request, "An unexpected error occurred. Please try again.")
             return redirect('checkout', caravan_id=caravan_id)
 
