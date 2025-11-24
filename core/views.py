@@ -187,8 +187,9 @@ def checkout_view(request, caravan_id):
             messages.error(request, "Invalid date format. Please use YYYY-MM-DD.")
             return redirect('checkout', caravan_id=caravan_id)
         except Exception as e:
-            # Optionally log the error e
-            messages.error(request, "An unexpected error occurred. Please try again.")
+            # Temporarily expose the actual error for debugging
+            error_message = f"An unexpected error occurred: {e}"
+            messages.error(request, error_message)
             return redirect('checkout', caravan_id=caravan_id)
 
     # GET request logic
