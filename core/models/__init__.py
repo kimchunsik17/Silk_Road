@@ -6,3 +6,4 @@ from .review import Review
 from .chat import Chat
 from .caravan_image import CaravanImage
 from .blocked_period import BlockedPeriod
+from .payment_method import PaymentMethod

@@ -11,5 +11,6 @@ class User(AbstractUser):
         choices=UserType.choices,
         default=UserType.GUEST,
     )
-    contact = models.CharField(max_length=15, blank=True)
+    full_name = models.CharField(max_length=100, blank=True)
+    phone_number = models.CharField(max_length=15, blank=True)
     is_verified = models.BooleanField(default=False)
