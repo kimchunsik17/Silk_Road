@@ -37,15 +37,21 @@
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="payment_method" id="paypal" value="paypal">
-                            <label class="form-check-label" for="paypal">
-                                PayPal
-                            </label>
-                        </div>
-                        <div class="form-check">
                             <input class="form-check-input" type="radio" name="payment_method" id="toss" value="toss">
                             <label class="form-check-label" for="toss">
                                 Toss
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="kakaopay" value="kakaopay">
+                            <label class="form-check-label" for="kakaopay">
+                                KakaoPay
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="naverpay" value="naverpay">
+                            <label class="form-check-label" for="naverpay">
+                                Naver Pay
                             </label>
                         </div>
 
@@ -82,7 +88,8 @@
     const checkoutForm = document.getElementById('checkout-form');
     checkoutForm.addEventListener('submit', function (event) {
         const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
-        if (selectedPaymentMethod === 'toss') {
+        const disabledMethods = ['toss', 'kakaopay', 'naverpay'];
+        if (disabledMethods.includes(selectedPaymentMethod)) {
             event.preventDefault();
             alert("사이트 사정으로 현재 업데이트 중입니다.");
         }
