@@ -17,6 +17,8 @@ from .services.notification_service import NotificationService
 from .services.pricing_strategy import StandardPricingStrategy
 from .exceptions import ReservationConflictError, InsufficientPermissionsError, PaymentFailedError
 from .forms import ReservationForm, CustomUserCreationForm, CaravanForm, CaravanImageFormSet, CaravanImageForm, BlockedPeriodFormSet
+from django.conf import settings
+from django.contrib import messages
 
 def signup_view(request):
     if request.method == 'POST':
@@ -147,10 +149,6 @@ def caravan_detail_view(request, caravan_id):
         'caravan_images': caravan_images,
     })
 
-from django.utils.html import escape
-from django.contrib import messages
-from datetime import datetime
-
 @login_required
 def checkout_view(request, caravan_id):
     caravan = get_object_or_404(Caravan, pk=caravan_id)
@@ -213,9 +211,32 @@ def checkout_view(request, caravan_id):
             
     context = {
         'caravan': caravan,
+        'TOSS_PAYMENTS_CLIENT_KEY': settings.TOSS_PAYMENTS_CLIENT_KEY
     }
     
     return render(request, 'checkout.html', context)
+
+@login_required
+def toss_success(request):
+    payment_key = request.GET.get('paymentKey')
+    order_id = request.GET.get('orderId')
+    amount = request.GET.get('amount')
+
+    # Manual dependency injection for now
+    payment_service = PaymentService()
+    
+    try:
+        payment_service.confirm_payment(payment_key, order_id, amount)
+        # TODO: Create a success page
+        return redirect('profile')
+    except Exception as e:
+        # TODO: Create a fail page
+        return redirect('toss_fail')
+
+@login_required
+def toss_fail(request):
+    # TODO: Create a fail page
+    return render(request, 'toss_fail.html')
 
 @login_required
 @require_POST

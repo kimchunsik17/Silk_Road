@@ -42,6 +42,12 @@
                                 PayPal
                             </label>
                         </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="toss" value="toss">
+                            <label class="form-check-label" for="toss">
+                                Toss
+                            </label>
+                        </div>
 
                         <hr class="my-4">
 
@@ -71,4 +77,33 @@
         </div>
     </div>
 </div>
+
+<script src="https://js.tosspayments.com/v1"></script>
+<script>
+    const checkoutForm = document.getElementById('checkout-form');
+    checkoutForm.addEventListener('submit', function (event) {
+        const selectedPaymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+        if (selectedPaymentMethod === 'toss') {
+            event.preventDefault();
+
+            const tossPayments = TossPayments('{{ TOSS_PAYMENTS_CLIENT_KEY }}');
+            const startDate = document.getElementById('start_date_input').value;
+            const endDate = document.getElementById('end_date_input').value;
+            const caravanId = document.querySelector('input[name="caravan_id"]').value;
+
+            // You will need to calculate the amount on the server-side and pass it to the template
+            // For now, let's use a placeholder amount
+            const amount = 1000; 
+
+            tossPayments.requestPayment('카드', {
+                amount: amount,
+                orderId: 'order__' + new Date().getTime(), // Replace with a unique order ID
+                orderName: '{{ caravan.name }}',
+                customerName: '{{ request.user.username }}',
+                successUrl: window.location.origin + '{% url "toss_success" %}',
+                failUrl: window.location.origin + '{% url "toss_fail" %}',
+            });
+        }
+    });
+</script>
 {% endblock %}

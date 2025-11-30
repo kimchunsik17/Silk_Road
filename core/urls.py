@@ -11,7 +11,9 @@ from .views import (
     custom_logout_view,
     create_caravan_view,
     update_caravan_view,
-    checkout_view
+    checkout_view,
+    toss_success,
+    toss_fail
 )
 
 urlpatterns = [
@@ -27,4 +29,6 @@ urlpatterns = [
     path('profile/', profile_view, name='profile'),
     path('chat/<int:user_id>/', chat_view, name='chat'),
     path('caravan/<int:caravan_id>/upload-image/', caravan_image_upload_view, name='caravan-image-upload'),
+    path('toss/success/', toss_success, name='toss_success'),
+    path('toss/fail/', toss_fail, name='toss_fail'),
 ]
