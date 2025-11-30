@@ -18,18 +18,25 @@ jobs:
             # 1. 프로젝트 폴더로 이동
             cd ~/Silk_Road
             
-            # 2. 최신 코드 다운로드
+            # 2. 로컬 변경사항 임시 저장
+            git stash
+            
+            # 3. 최신 코드 다운로드
             git pull origin main
             
-            # 3. 가상환경 켜기
+            # (Optional) 2-1. 임시 저장한 변경사항 다시 적용 (충돌 발생 시 수동 해결 필요)
+            # git stash pop
+            
+            # 4. 가상환경 켜기
             source venv/bin/activate
             
-            # 4. 패키지 설치 (새로운 라이브러리가 있을 수 있으니)
+            # 5. 패키지 설치
             pip install -r requirements.txt
             
-            # 5. CSS 파일 모으기 & DB 마이그레이션
+            # 6. 정적 파일 수집 및 DB 마이그레이션
             python manage.py collectstatic --noinput
             python manage.py migrate
             
-            # 6. 서버 재시작 (관리자 권한 필요)
+            # 7. 서버 재시작
             sudo systemctl restart gunicorn
+            sudo systemctl restart nginx
