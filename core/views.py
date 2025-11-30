@@ -7,7 +7,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth import logout
 import json
 from datetime import timedelta, datetime
-from .models import Caravan, Reservation, User, Chat
+from .models import Caravan, Reservation, User, Chat, PaymentMethod
 from django.db.models import Q
 from .services.reservation_service import ReservationService
 from .repositories.reservation_repository import ReservationRepository
@@ -16,7 +16,16 @@ from .services.payment_service import PaymentService
 from .services.notification_service import NotificationService
 from .services.pricing_strategy import StandardPricingStrategy
 from .exceptions import ReservationConflictError, InsufficientPermissionsError, PaymentFailedError
-from .forms import ReservationForm, CustomUserCreationForm, CaravanForm, CaravanImageFormSet, CaravanImageForm, BlockedPeriodFormSet
+from .forms import (
+    ReservationForm, 
+    CustomUserCreationForm, 
+    CaravanForm, 
+    CaravanImageFormSet, 
+    CaravanImageForm, 
+    BlockedPeriodFormSet,
+    UserProfileForm,
+    PaymentMethodForm
+)
 from django.conf import settings
 from django.contrib import messages
 
@@ -295,5 +304,31 @@ def caravan_image_upload_view(request, caravan_id):
 
 @login_required
 def profile_view(request):
+    if request.method == 'POST':
+        if 'update_profile' in request.POST:
+            profile_form = UserProfileForm(request.POST, instance=request.user)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, 'Your profile has been updated successfully.')
+                return redirect('profile')
+        elif 'add_payment_method' in request.POST:
+            payment_form = PaymentMethodForm(request.POST)
+            if payment_form.is_valid():
+                payment_method = payment_form.save(commit=False)
+                payment_method.user = request.user
+                payment_method.save()
+                messages.success(request, 'Payment method added successfully.')
+                return redirect('profile')
+
+    profile_form = UserProfileForm(instance=request.user)
+    payment_form = PaymentMethodForm()
+    payment_methods = PaymentMethod.objects.filter(user=request.user)
     reservations = Reservation.objects.filter(guest=request.user)
-    return render(request, 'profile.html', {'reservations': reservations})
+
+    context = {
+        'profile_form': profile_form,
+        'payment_form': payment_form,
+        'payment_methods': payment_methods,
+        'reservations': reservations
+    }
+    return render(request, 'profile.html', context)

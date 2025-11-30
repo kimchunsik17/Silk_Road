@@ -1,12 +1,22 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import modelformset_factory
-from .models import User, Caravan, CaravanImage, BlockedPeriod
+from .models import User, Caravan, CaravanImage, BlockedPeriod, PaymentMethod
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         model = User
         fields = UserCreationForm.Meta.fields + ('user_type',)
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['full_name', 'phone_number']
+
+class PaymentMethodForm(forms.ModelForm):
+    class Meta:
+        model = PaymentMethod
+        fields = ['card_brand', 'card_last_four', 'is_default']
 
 class CaravanForm(forms.ModelForm):
     AMENITY_CHOICES = [
