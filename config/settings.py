@@ -154,6 +154,4 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-# Toss Payments
-TOSS_PAYMENTS_SECRET_KEY = 'test_sk_xxxxxxxxxxxxxxxxxxxxxx'
-TOSS_PAYMENTS_CLIENT_KEY = 'test_ck_xxxxxxxxxxxxxxxxxxxxxx'
+

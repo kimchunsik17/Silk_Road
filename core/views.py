@@ -211,32 +211,9 @@ def checkout_view(request, caravan_id):
             
     context = {
         'caravan': caravan,
-        'TOSS_PAYMENTS_CLIENT_KEY': settings.TOSS_PAYMENTS_CLIENT_KEY
     }
     
     return render(request, 'checkout.html', context)
-
-@login_required
-def toss_success(request):
-    payment_key = request.GET.get('paymentKey')
-    order_id = request.GET.get('orderId')
-    amount = request.GET.get('amount')
-
-    # Manual dependency injection for now
-    payment_service = PaymentService()
-    
-    try:
-        payment_service.confirm_payment(payment_key, order_id, amount)
-        # TODO: Create a success page
-        return redirect('profile')
-    except Exception as e:
-        # TODO: Create a fail page
-        return redirect('toss_fail')
-
-@login_required
-def toss_fail(request):
-    # TODO: Create a fail page
-    return render(request, 'toss_fail.html')
 
 @login_required
 @require_POST
