@@ -29,9 +29,8 @@
     const roomName = '{{ room_name }}';
     const requestUser = '{{ request.user.username }}';
 
-    const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
     const chatSocket = new WebSocket(
-        protocol
+        'ws://'
         + window.location.host
         + '/ws/chat/'
         + roomName
