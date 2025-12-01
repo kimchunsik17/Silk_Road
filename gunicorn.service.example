@@ -3,10 +3,10 @@ Description=gunicorn daemon
 After=network.target
 
 [Service]
-User=dydeo
+User=browny3542
 Group=www-data
-WorkingDirectory=/home/dydeo/Silk_Road
-ExecStart=/home/dydeo/Silk_Road/venv/bin/gunicorn \
+WorkingDirectory=/home/browny3542/Silk_Road
+ExecStart=/home/browny3542/Silk_Road/venv/bin/gunicorn \
           --access-logfile - \
           --workers 3 \
           --bind unix:/run/gunicorn.sock \
