@@ -6,6 +6,7 @@ After=network.target
 User=browny3542
 Group=www-data
 WorkingDirectory=/home/browny3542/Silk_Road
+Environment="DJANGO_SETTINGS_MODULE=config.settings"
 ExecStart=/home/browny3542/Silk_Road/venv/bin/daphne \
           -p 8001 \
           config.asgi:application
