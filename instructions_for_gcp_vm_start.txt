@@ -1,0 +1,14 @@
+To start your virtual machine (VM) instance on Google Cloud Platform (GCP), you can follow these steps using the GCP Console:
+
+1.  **Go to the Google Cloud Console:** Open your web browser and navigate to [https://console.cloud.google.com/](https://console.cloud.google.com/).
+2.  **Select your Project:** If you have multiple GCP projects, ensure you've selected the correct project from the dropdown menu at the top of the page.
+3.  **Navigate to Compute Engine:** In the left-hand navigation menu, go to **Compute Engine** > **VM instances**.
+4.  **Locate your VM Instance:** You will see a list of your VM instances. Find the instance you want to start.
+5.  **Start the VM Instance:**
+    *   Check the checkbox next to the VM instance you want to start.
+    *   At the top of the list, click the **START** button (it looks like a right-facing triangle or a play button).
+6.  **Confirm:** Confirm your action if prompted.
+
+Once the instance is started, it might take a few moments for all services (like Gunicorn and Nginx) to come online, especially if they are configured to start automatically on boot.
+
+After starting the VM, you can try to access your website or use the SSH command again if needed.

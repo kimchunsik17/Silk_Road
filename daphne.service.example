@@ -1,0 +1,15 @@
+[Unit]
+Description=daphne daemon
+After=network.target
+
+[Service]
+User=dydeo
+Group=www-data
+WorkingDirectory=/home/dydeo/Silk_Road
+ExecStart=/home/dydeo/Silk_Road/venv/bin/daphne \
+          -p 8001 \
+          config.asgi:application
+
+[Install]
+WantedBy=multi-user.target
+
