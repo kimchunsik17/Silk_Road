@@ -29,8 +29,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = text_data_json['message']
         sender = self.scope['user']
         
-        room_users = self.room_name.split('_')
-        receiver_id = int(room_users[0]) if int(room_users[1]) == sender.id else int(room_users[1])
+        room_users_ids = [int(uid) for uid in self.room_name.split('_')]
+        # Determine the receiver_id by finding the user_id in room_users_ids that is not the sender.id
+        receiver_id = next((uid for uid in room_users_ids if uid != sender.id), None)
+        
+        if receiver_id is None:
+            # This case should ideally not happen if room_name always contains two distinct user IDs
+            print(f"Error: Could not determine receiver_id from room_name: {self.room_name} for sender: {sender.id}")
+            return # Or raise an exception
 
         await self.save_message(sender.id, receiver_id, message)
 
@@ -40,6 +46,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             {
                 'type': 'chat_message',
                 'message': message,
+                'sender_id': sender.id,
                 'sender_username': sender.username
             }
         )
@@ -48,11 +55,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         message = event['message']
         sender_username = event['sender_username']
+        sender_id = event['sender_id']
 
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'message': message,
-            'sender_username': sender_username
+            'sender_username': sender_username,
+            'sender_id': sender_id
         }))
 
     @database_sync_to_async

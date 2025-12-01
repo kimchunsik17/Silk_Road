@@ -27,10 +27,10 @@
     chatLog.scrollTop = chatLog.scrollHeight;
 
     const roomName = '{{ room_name }}';
-    const requestUser = '{{ request.user.username }}';
+    const requestUserId = {{ request.user.id }};
 
     const chatSocket = new WebSocket(
-        'ws://'
+        (window.location.protocol === 'https:' ? 'wss://' : 'ws://')
         + window.location.host
         + '/ws/chat/'
         + roomName
@@ -49,7 +49,7 @@
         const data = JSON.parse(e.data);
         console.log('Received message:', data);
         const messageElement = document.createElement('div');
-        const isSender = data.sender_username === requestUser;
+        const isSender = data.sender_id === requestUserId;
         messageElement.classList.add(isSender ? 'text-end' : 'text-start');
         messageElement.innerHTML = `<strong>${isSender ? 'You' : data.sender_username}</strong>: ${data.message}`;
         chatLog.appendChild(messageElement);
